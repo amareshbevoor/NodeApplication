@@ -28,9 +28,21 @@ app.get("/api/users", (req, res) => {
 //Add new user
 app.post("/api/users", (req, res) => {
   const body = req.body;
+  if (
+    !body ||
+    !body.first_name ||
+    !body.last_name ||
+    !body.email ||
+    !body.gender ||
+    !body.city
+  ) {
+    return res.status(400).json({ staus: "All fields are required.." });
+  }
   users.push({ ...body, id: users.length + 1 });
   fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err, data) => {
-    return res.json({ staus: "success", id: users.length });
+    return res
+      .status(201)
+      .json({ staus: "New user created..", id: users.length });
   });
 });
 
@@ -38,7 +50,12 @@ app
   .route("/api/users/:id")
   .get((req, res) => {
     //Get singke user with id
+
     const user_data = users.find((user) => user.id === Number(req.params.id));
+    if (!user_data)
+      res.status(404).json({
+        status: `The requested user with id: ${req.params.id} not found..`,
+      });
     res.json(user_data);
   })
   .put((req, res) => {
